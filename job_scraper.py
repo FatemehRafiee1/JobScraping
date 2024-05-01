@@ -45,6 +45,7 @@ def split_at_punctuation(long_string):
     
     return part1, part2, part3
 
+
 # get raw data from website
 def get_data(url, proxies, headers):
     while True:
@@ -57,6 +58,7 @@ def get_data(url, proxies, headers):
                 return res
         except Exception as e:
             print(f"Failed to fetch data from {url}: {e}")
+
 
 # get job title, company, date published, location, and url link
 def extract_job_details(url, proxies, headers, n_jobs):
@@ -87,6 +89,7 @@ def extract_job_details(url, proxies, headers, n_jobs):
     
     return titles, subtitles, locations, dates, links
 
+
 # extract job keywords from the thorough description
 def extract_job_keywords(url, proxies, headers):
     knowledge = []
@@ -114,6 +117,7 @@ proxy_file_path = "proxy.txt"
 output_file_path = "sample_output_80.csv"
 user_agents_file_path = "user_agents.txt"
 
+# following links are found and set manually
 url_base = 'https://www.linkedin.com/jobs/search?keywords=Python&location=United%20States&geoId=103644278&f_E=2&f_TPR=&f_WT=2&position=1&pageNum=0'
 url_rest = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Python&location=United%2BStates&geoId=103644278&f_E=2&f_TPR=&f_WT=2'
 
@@ -123,7 +127,7 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 }           
 
-
+# iterates over new pages to get the initial job data
 def fetch_job_data(url_base, url_rest, proxies, headers):
     start = True
     df = pd.DataFrame(columns=['title', 'company', 'location', 'date', 'link'])
@@ -152,8 +156,6 @@ for link in df_total['link'].values:
     if detected_keywords:
         skills_list.append(detected_keywords)
 
-
-# Create DataFrame
 df_total['skills'] = skills_list
 
 # Save to CSV
