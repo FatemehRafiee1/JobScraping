@@ -109,9 +109,9 @@ def extract_job_keywords(url, proxies, headers):
 
 # parameters
 iteration = 2
-jobs_per_page = 25
+jobs_per_page = 10
 proxy_file_path = "proxy.txt"
-output_file_path = "sample_500.csv"
+output_file_path = "sample_output_80.csv"
 user_agents_file_path = "user_agents.txt"
 
 url_base = 'https://www.linkedin.com/jobs/search?keywords=Python&location=United%20States&geoId=103644278&f_E=2&f_TPR=&f_WT=2&position=1&pageNum=0'
@@ -123,9 +123,10 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.9',
 }           
 
+
 def fetch_job_data(url_base, url_rest, proxies, headers):
     start = True
-    titles_total, subtitles_total, locations_total, dates_total, links_total = [], [], [], [], []
+    df = pd.DataFrame(columns=['title', 'company', 'location', 'date', 'link'])
     for idx in range(0, iteration * jobs_per_page + 1, jobs_per_page):
         if start:
             current_url = url_base
@@ -135,30 +136,26 @@ def fetch_job_data(url_base, url_rest, proxies, headers):
         start = False
         print(idx-jobs_per_page)
         if titles and subtitles and locations and dates and links:
-            titles_total.extend(titles)
-            subtitles_total.extend(subtitles)
-            locations_total.extend(locations)
-            dates_total.extend(dates)
-            links_total.extend(links)
             print(len(titles), len(subtitles), len(locations), len(dates), len(links))
+            df_tmp = pd.DataFrame({'title': titles, 'company': subtitles, 'location': locations, 'date': dates, 'link': links})
+            df = pd.concat([df, df_tmp])
 
-    return titles_total, subtitles_total, locations_total, dates_total, links_total
+    return df
 
-titles_total, subtitles_total, locations_total, dates_total, links_total = fetch_job_data(url_base, url_rest, proxies, headers)
+df_total = fetch_job_data(url_base, url_rest, proxies, headers)
 
 
 # Extract job descriptions and keywords
 skills_list = []
-for link in links_total:
+for link in df_total['link'].values:
     detected_keywords = extract_job_keywords(link, proxies, headers)
     if detected_keywords:
         skills_list.append(detected_keywords)
 
 
 # Create DataFrame
-df = pd.DataFrame({'title': titles_total, 'company': subtitles_total, 'location': locations_total, 'date': dates_total, 'link': links_total})
-df['skills'] = skills_list
+df_total['skills'] = skills_list
 
 # Save to CSV
-df.to_csv(output_file_path, index=False)
+df_total.to_csv(output_file_path, index=False)
 print(f"Data saved to {output_file_path}")
